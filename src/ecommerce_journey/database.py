@@ -20,6 +20,8 @@ SQL_FILES = (
     "02_product_metrics.sql",
     "03_retention.sql",
     "04_cart_recovery.sql",
+    "05_segmentation.sql",
+    "06_abandonment_diagnostics.sql",
 )
 
 

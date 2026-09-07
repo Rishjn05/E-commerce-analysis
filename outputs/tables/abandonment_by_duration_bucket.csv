@@ -1,0 +1,6 @@
+session_duration_bucket,abandoned_sessions,recovery_rate_7d_pct
+01. under 1 min,9634,2.51
+02. 1-5 min,8331,3.83
+03. 5-15 min,5941,5.91
+04. 15-30 min,3182,6.82
+05. 30+ min,1938,13.67

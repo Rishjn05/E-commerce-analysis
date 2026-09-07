@@ -44,7 +44,7 @@ def main() -> None:
     print("1/5 Building DuckDB analytical model...")
     connection = build_database()
 
-    print("2/5 Exporting reviewed tables and summary metrics...")
+    print("2/5 Exporting reviewed tables, segments, guardrails, and summary metrics...")
     tables = export_tables(connection)
     summary = build_summary(tables)
     write_summary(summary)

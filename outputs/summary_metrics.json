@@ -48,5 +48,25 @@
     "sample_size_per_arm": 5416,
     "total_sample_size": 10832,
     "estimated_calendar_weeks": 9
+  },
+  "segmentation": {
+    "segment_count": 3,
+    "segments": [
+      {
+        "label": "lapsed / one-and-done",
+        "visitor_share_pct": 45.85,
+        "cart_to_purchase_rate_pct": 0.32
+      },
+      {
+        "label": "loyal repeat purchasers",
+        "visitor_share_pct": 2.19,
+        "cart_to_purchase_rate_pct": 33.26
+      },
+      {
+        "label": "casual browsers",
+        "visitor_share_pct": 51.97,
+        "cart_to_purchase_rate_pct": 1.0
+      }
+    ]
   }
 }

@@ -298,9 +298,99 @@ def plot_cart_recovery(recovery: pd.DataFrame) -> plt.Figure:
     return figure
 
 
+def plot_segment_profiles(profiles: pd.DataFrame) -> plt.Figure:
+    data = profiles.sort_values("visitor_share_pct", ascending=False).copy()
+    data["label"] = (
+        data["segment_label"] + "\n(" + data["visitor_share_pct"].astype(str) + "% of visitors)"
+    )
+
+    figure, axes = plt.subplots(1, 2, figsize=(11.5, 4.8))
+
+    axes[0].barh(data["label"], data["cart_to_purchase_rate_pct"], color=BLUE)
+    axes[0].set_xlabel("Cart-to-purchase rate, %")
+    axes[0].invert_yaxis()
+    axes[0].spines[["top", "right"]].set_visible(False)
+
+    axes[1].barh(data["label"], data["avg_events_per_session"], color=GOLD)
+    axes[1].set_xlabel("Avg. events per session")
+    axes[1].set_yticklabels([])
+    axes[1].invert_yaxis()
+    axes[1].spines[["top", "right"]].set_visible(False)
+
+    figure.suptitle(
+        "Behavioral visitor segments",
+        x=0.08,
+        y=0.99,
+        ha="left",
+        fontsize=15,
+        fontweight="bold",
+    )
+    figure.text(
+        0.08,
+        0.93,
+        "K-means on engagement and funnel features; centroids shown per segment",
+        color=GREY,
+    )
+    figure.tight_layout(rect=(0, 0, 1, 0.88))
+    return figure
+
+
+def plot_abandonment_diagnostics(
+    by_hour: pd.DataFrame,
+    by_weekday: pd.DataFrame,
+    by_duration: pd.DataFrame,
+    by_cart_size: pd.DataFrame,
+) -> plt.Figure:
+    figure, axes = plt.subplots(2, 2, figsize=(11.5, 8.0))
+
+    axes[0, 0].bar(by_hour["hour_of_day_utc"], by_hour["recovery_rate_7d_pct"], color=BLUE)
+    axes[0, 0].set_title("By hour of day (UTC)", loc="left", color=CHARCOAL)
+    axes[0, 0].set_ylabel("7-day recovery rate, %")
+
+    axes[0, 1].bar(by_weekday["weekday"], by_weekday["recovery_rate_7d_pct"], color=BLUE_LIGHT)
+    axes[0, 1].set_title("By weekday", loc="left", color=CHARCOAL)
+    axes[0, 1].tick_params(axis="x", rotation=30)
+
+    axes[1, 0].bar(
+        by_duration["session_duration_bucket"].str.slice(4),
+        by_duration["recovery_rate_7d_pct"],
+        color=GOLD,
+    )
+    axes[1, 0].set_title("By session duration", loc="left", color=CHARCOAL)
+    axes[1, 0].set_ylabel("7-day recovery rate, %")
+    axes[1, 0].tick_params(axis="x", rotation=20)
+
+    axes[1, 1].bar(
+        by_cart_size["cart_size_bucket"].str.slice(4),
+        by_cart_size["recovery_rate_7d_pct"],
+        color=CHARCOAL,
+    )
+    axes[1, 1].set_title("By cart size", loc="left", color=CHARCOAL)
+
+    for axis in axes.flat:
+        axis.spines[["top", "right"]].set_visible(False)
+
+    figure.suptitle(
+        "Cart-abandonment recovery: where it concentrates",
+        x=0.06,
+        y=0.99,
+        ha="left",
+        fontsize=15,
+        fontweight="bold",
+    )
+    figure.text(
+        0.06,
+        0.955,
+        "Associative cuts of observational data, not a causal breakdown",
+        color=GREY,
+    )
+    figure.tight_layout(rect=(0, 0, 1, 0.93))
+    return figure
+
+
 def generate_figures(tables: dict[str, pd.DataFrame]) -> list[Path]:
     configure_style()
-    return [
+    figures = [
         _save(plot_funnel(tables["funnel_summary"]), "01_funnel_conversion.png"),
         _save(plot_weekly_metrics(tables["weekly_metrics"]), "02_weekly_metrics.png"),
         _save(
@@ -316,3 +406,31 @@ def generate_figures(tables: dict[str, pd.DataFrame]) -> list[Path]:
             "05_cart_recovery.png",
         ),
     ]
+
+    if "segment_profiles" in tables:
+        figures.append(
+            _save(
+                plot_segment_profiles(tables["segment_profiles"]),
+                "06_segment_profiles.png",
+            )
+        )
+
+    if {
+        "abandonment_by_hour",
+        "abandonment_by_weekday",
+        "abandonment_by_duration_bucket",
+        "abandonment_by_cart_size",
+    }.issubset(tables):
+        figures.append(
+            _save(
+                plot_abandonment_diagnostics(
+                    tables["abandonment_by_hour"],
+                    tables["abandonment_by_weekday"],
+                    tables["abandonment_by_duration_bucket"],
+                    tables["abandonment_by_cart_size"],
+                ),
+                "07_abandonment_diagnostics.png",
+            )
+        )
+
+    return figures

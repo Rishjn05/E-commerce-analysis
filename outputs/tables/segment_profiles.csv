@@ -1,0 +1,4 @@
+segment_id,recency_days,session_count,avg_events_per_session,avg_session_duration_minutes,cart_session_rate_pct,cart_to_purchase_rate_pct,beyond_browse_session_rate_pct,visitor_count,visitor_share_pct,segment_label
+0,104.07,1.17,1.4,1.1,0.17,0.32,0.22,645329,45.85,lapsed / one-and-done
+1,66.98,2.03,4.52,9.48,84.52,33.26,86.25,30783,2.19,loyal repeat purchasers
+2,36.84,1.29,1.31,0.98,0.21,1.0,0.26,731468,51.97,casual browsers

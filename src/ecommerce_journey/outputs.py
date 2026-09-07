@@ -10,6 +10,8 @@ import pandas as pd
 
 from .config import OUTPUT_DIR, TABLE_DIR, ensure_directories
 from .experiment import build_power_table
+from .guardrails import guardrail_definitions_table, simulate_guardrail_monitoring
+from .segmentation import fit_segments, load_features
 
 
 EXPORT_TABLES = (
@@ -27,6 +29,11 @@ EXPORT_TABLES = (
     "activation_retention_w1",
     "cart_recovery_curve",
     "cart_recovery_weekly_eligibility",
+    "abandonment_by_hour",
+    "abandonment_by_weekday",
+    "abandonment_by_duration_bucket",
+    "abandonment_by_cart_size",
+    "abandonment_by_visitor_status",
 )
 
 
@@ -63,6 +70,32 @@ def export_tables(connection: duckdb.DuckDBPyConnection) -> dict[str, pd.DataFra
     )
     power_table.to_csv(TABLE_DIR / "experiment_power.csv", index=False)
     tables["experiment_power"] = power_table
+
+    recommended_power = power_table.loc[
+        np.isclose(power_table["relative_mde"], 0.25)
+    ].iloc[0]
+
+    features = load_features(connection)
+    assignments, profiles, model_selection = fit_segments(features)
+    assignments.to_csv(TABLE_DIR / "visitor_segments.csv", index=False)
+    profiles.to_csv(TABLE_DIR / "segment_profiles.csv", index=False)
+    model_selection.to_csv(TABLE_DIR / "segmentation_model_selection.csv", index=False)
+    tables["visitor_segments"] = assignments
+    tables["segment_profiles"] = profiles
+    tables["segmentation_model_selection"] = model_selection
+
+    guardrail_defs = guardrail_definitions_table()
+    guardrail_defs.to_csv(TABLE_DIR / "guardrail_metric_definitions.csv", index=False)
+    tables["guardrail_metric_definitions"] = guardrail_defs
+
+    guardrail_simulation = simulate_guardrail_monitoring(
+        sample_size_per_arm=int(recommended_power["sample_size_per_arm"]),
+        weeks=int(recommended_power["estimated_calendar_weeks"]),
+    )
+    guardrail_simulation.to_csv(
+        TABLE_DIR / "guardrail_simulated_monitoring.csv", index=False
+    )
+    tables["guardrail_simulated_monitoring"] = guardrail_simulation
 
     return tables
 
@@ -181,6 +214,21 @@ def build_summary(tables: dict[str, pd.DataFrame]) -> dict[str, Any]:
             "estimated_calendar_weeks": int(
                 recommended_power["estimated_calendar_weeks"]
             ),
+        },
+        "segmentation": {
+            "segment_count": int(len(tables["segment_profiles"])),
+            "segments": [
+                {
+                    "label": row["segment_label"],
+                    "visitor_share_pct": _native(row["visitor_share_pct"]),
+                    "cart_to_purchase_rate_pct": _native(
+                        row["cart_to_purchase_rate_pct"]
+                    ),
+                }
+                for _, row in tables["segment_profiles"].iterrows()
+            ]
+            if "segment_profiles" in tables
+            else [],
         },
     }
     return summary

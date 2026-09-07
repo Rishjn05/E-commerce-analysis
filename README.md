@@ -61,6 +61,38 @@ person-level retention.
 
 ![Weekly visitor-ID retention](outputs/figures/04_cohort_retention.png)
 
+## Behavioral segmentation
+
+`sql/05_segmentation.sql` builds a visitor-level feature table (recency,
+session frequency, average events per session, session duration, and
+funnel-progression rates), and `src/ecommerce_journey/segmentation.py` fits a
+k-means model on top of it. Cluster count is chosen by silhouette score over
+k = 3..6 rather than fixed in advance, and segment labels (e.g. "high-intent
+converters", "casual browsers", "lapsed / one-and-done") are assigned by
+ranking cluster centroids on purchase and engagement behavior, not
+hand-picked per run.
+
+These are *behavioral* segments, not persona or taste segments — the fixed
+source has no category, price, or demographic fields, so a visitor is
+grouped only by how they browse and convert.
+
+Run `python scripts/run_pipeline.py` to generate `outputs/tables/visitor_segments.csv`,
+`outputs/tables/segment_profiles.csv`, and `outputs/figures/06_segment_profiles.png`
+against the current data.
+
+## Cart-abandonment diagnostics
+
+`sql/06_abandonment_diagnostics.sql` breaks first-observed cart abandonment
+and its 7-day recovery down by hour of day, weekday, session duration, cart
+size, and visitor status at the time of abandonment. This is an associative
+breakdown of observational data — it shows *where* abandonment and recovery
+concentrate, not *why* a given visitor abandoned, since the source has no
+checkout, price, or acquisition fields. Read it as a prioritization input for
+the experiment above, not a causal explanation.
+
+Run `python scripts/run_pipeline.py` to generate the `abandonment_by_*`
+tables and `outputs/figures/07_abandonment_diagnostics.png`.
+
 ## Product and metric framework
 
 The product is an anonymized multi-category e-commerce site. A visitor can
@@ -77,7 +109,11 @@ generate `view`, `addtocart`, and `transaction` events.
 For an actual cart-recovery test, product-quality guardrails should include
 notification opt-outs or complaints, refunds or cancellations, gross margin,
 and delivery failures. These fields are not present in the public dataset and
-must be instrumented before the test.
+must be instrumented before the test. [docs/guardrail_metrics.md](docs/guardrail_metrics.md)
+fixes the formula and stop rule for each guardrail now, and ships a labeled
+*synthetic* monitoring simulation (`src/ecommerce_journey/guardrails.py`) so
+the monitoring dashboard and stopping logic can be built and rehearsed before
+the real fields exist — every simulated row is tagged `is_synthetic: true`.
 
 ## Data and quality controls
 
@@ -126,7 +162,8 @@ in [docs/experiment_design.md](docs/experiment_design.md).
 ecommerce-journey-analytics/
 ├── data/                       Raw and generated data are ignored
 ├── docs/
-│   └── experiment_design.md
+│   ├── experiment_design.md
+│   └── guardrail_metrics.md
 ├── notebooks/
 │   └── 01_ecommerce_journey_analysis.ipynb
 ├── outputs/
@@ -139,7 +176,12 @@ ecommerce-journey-analytics/
 │   ├── run_pipeline.py
 │   └── validate_project.py
 ├── sql/                        Executed DuckDB SQL transformations
+│   ├── 00_build_model.sql ... 04_cart_recovery.sql
+│   ├── 05_segmentation.sql             Visitor behavioral-feature table
+│   └── 06_abandonment_diagnostics.sql  Abandonment/recovery cuts
 └── src/ecommerce_journey/      Python pipeline, plots, power, validation
+    ├── segmentation.py         K-means behavioral segmentation
+    └── guardrails.py           Guardrail definitions + synthetic simulation
 ```
 
 ## Reproduce on Windows PowerShell

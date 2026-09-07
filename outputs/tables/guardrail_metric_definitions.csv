@@ -1,0 +1,6 @@
+metric,definition,direction,stop_threshold,required_fields
+notification_opt_out_rate_pct,Recipients who opt out of reminder notifications within 7 days of receipt / recipients who received a reminder.,lower is better,treatment arm exceeds control arm by >1.0pp,"['notification_sent', 'notification_opt_out']"
+complaint_rate_pct,Recipients filing a support complaint referencing the reminder within 7 days / recipients who received a reminder.,lower is better,treatment arm exceeds control arm by >0.5pp,"['support_ticket', 'ticket_reason_tag']"
+refund_or_cancellation_rate_pct,"Orders refunded or canceled within 14 days / orders placed, among the 7-day conversion cohort.",lower is better,treatment arm exceeds control arm by >2.0pp,"['order_id', 'refund_flag', 'cancellation_flag']"
+gross_margin_per_order,"(Order revenue - COGS - discount value) / orders placed, among the 7-day conversion cohort.",should not drop materially vs. control,treatment arm margin/order falls >10% below control,"['order_id', 'revenue', 'cogs', 'discount_value']"
+delivery_failure_rate_pct,"Orders marked failed/undeliverable / orders placed, among the 7-day conversion cohort.",lower is better,treatment arm exceeds control arm by >1.5pp,"['order_id', 'delivery_status']"
