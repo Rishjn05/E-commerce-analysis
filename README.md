@@ -137,24 +137,6 @@ The transaction rows are item-level: 22,457 transaction item events correspond
 to 17,672 distinct transaction IDs. Session conversion therefore uses the
 presence of a transaction rather than summing transaction rows.
 
-## Experiment proposal
-
-The proposed treatment is a saved-cart reminder sent after the first qualifying
-cart-abandonment session. Eligibility and randomization must be defined before
-delivery:
-
-- unit of randomization: stable visitor or account ID;
-- inclusion: first cart session with no transaction, after a fixed inactivity
-  delay;
-- population: recognized visitors with a permitted delivery channel;
-- primary metric: seven-day visitor conversion, analyzed by intention to treat;
-- design: 50/50 assignment, two-sided alpha 0.05, power 0.80;
-- planning MDE: 25% relative, from 4.93% to 6.16%;
-- required sample: 5,416 visitors per arm;
-- estimated duration: nine calendar weeks including follow-up.
-
-The full design, guardrails, instrumentation, and decision rule are documented
-in [docs/experiment_design.md](docs/experiment_design.md).
 
 ## Repository structure
 
@@ -216,27 +198,4 @@ Open the executed notebook:
 jupyter lab notebooks\01_ecommerce_journey_analysis.ipynb
 ```
 
-## Limits and next data to collect
 
-The analysis is observational. Behavioral segments are selected by behavior
-and should not be read as treatment effects. `visitor_id` may represent a
-browser or cookie rather than a person, and cross-device activity is not
-resolved.
-
-The next instrumentation priority is:
-
-- `checkout_started`, `payment_method_selected`, `payment_failed`, and
-  `order_completed`;
-- experiment assignment, reminder delivery, click, and suppression reason;
-- stable account identity and communication consent;
-- acquisition channel, device, locale, and app/web platform;
-- price, quantity, discount, margin, inventory, cancellation, and refund.
-
-These events would allow the team to separate discovery friction, checkout
-failure, cart persistence, and message delivery instead of treating every
-missing transaction as the same problem.
-
-## License
-
-Code is licensed under MIT. The source dataset and generated analytical outputs
-are subject to CC BY-NC-SA 4.0; see [DATA_LICENSE.md](DATA_LICENSE.md).
