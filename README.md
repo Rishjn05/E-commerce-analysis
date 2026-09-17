@@ -142,22 +142,22 @@ presence of a transaction rather than summing transaction rows.
 
 ```text
 ecommerce-journey-analytics/
-├── data/                       Raw and generated data are ignored
+├── data/                       
 ├── docs/
 │   ├── experiment_design.md
 │   └── guardrail_metrics.md
 ├── notebooks/
 │   └── 01_ecommerce_journey_analysis.ipynb
 ├── outputs/
-│   ├── figures/                Committed analytical figures
-│   ├── tables/                 Committed reviewed result tables
+│   ├── figures/                
+│   ├── tables/                
 │   ├── summary_metrics.json
 │   └── validation_report.txt
 ├── scripts/
 │   ├── download_data.py
 │   ├── run_pipeline.py
 │   └── validate_project.py
-├── sql/                        Executed DuckDB SQL transformations
+├── sql/                        
 │   ├── 00_build_model.sql ... 04_cart_recovery.sql
 │   ├── 05_segmentation.sql             Visitor behavioral-feature table
 │   └── 06_abandonment_diagnostics.sql  Abandonment/recovery cuts
@@ -166,11 +166,6 @@ ecommerce-journey-analytics/
     └── guardrails.py           Guardrail definitions + synthetic simulation
 ```
 
-## Reproduce on Windows PowerShell
-
-```powershell
-git clone https://github.com/No-NameMan/ecommerce-journey-analytics.git
-cd ecommerce-journey-analytics
 
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
@@ -181,10 +176,6 @@ python scripts\download_data.py
 python scripts\run_pipeline.py
 ```
 
-The first command downloads a 291 MiB archive, verifies it, and extracts only
-the 90 MiB event file. The second command builds the DuckDB model, executes all
-SQL, exports tables, renders figures, runs the notebook top to bottom, and
-checks the headline results.
 
 To rerun validation separately:
 
