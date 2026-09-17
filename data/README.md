@@ -24,6 +24,3 @@ pass the archive path:
 python scripts\download_data.py --archive "C:\path\to\archive.zip"
 ```
 
-The analytical database is generated under `data/processed/` and is also
-excluded from Git. See [DATA_LICENSE.md](../DATA_LICENSE.md) for attribution
-and licensing.
